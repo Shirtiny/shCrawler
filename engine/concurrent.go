@@ -6,7 +6,7 @@ import (
 	"shSpider_plus/fetcher"
 )
 
-//并发引擎
+//并发引擎 不再用
 type Concurrent struct {
 	//调度器
 	Scheduler Scheduler

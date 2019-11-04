@@ -34,11 +34,18 @@ var locationReg = regexp.MustCompile(`<div[^>]*>工作地:([^<]+)</div>`)
 func ParseProfile(bytes []byte) engine.ParseResult {
 
 	//用于存取profile信息的模型对象
+	esModel := model.EsModel{}
 	profile := model.Profile{}
 
+
+	//index
+	esModel.Index="zhenaidata"
+
+	//type
+	esModel.Type="zhenai"
+
 	//id
-	//调用提取数字的方法 string转int然后赋值
-	profile.ID = extractIntWithReg(bytes, idReg)
+	esModel.ID = extractStringWithReg(bytes, idReg)
 
 	//昵称
 	profile.NickName = extractStringWithReg(bytes, nickNameReg)
@@ -58,8 +65,11 @@ func ParseProfile(bytes []byte) engine.ParseResult {
 	//工作地
 	profile.Location = extractStringWithReg(bytes, locationReg)
 
+	//把profile交给esModel
+	esModel.Object=profile
+
 	return engine.ParseResult{
-		Objects: []interface{}{profile},
+		Objects: []model.EsModel{esModel},
 	}
 }
 

@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"log"
 	"shSpider_plus/fetcher"
+	"shSpider_plus/model"
 )
 
-//队列版本 并发引擎
+//队列版本 并发引擎 正在用
 type ConcurrentQueue struct {
 	//调度器
 	Scheduler SchedulerQueue
 	//worker协程数
 	WorkerCount int
-	//存储通道 传输任何类型
-	SaverChan chan interface{}
+	//存储通道 传输model.EsModel类型
+	SaverChan chan model.EsModel
 }
 
 //接口 调度器 接口方法的参数不需要名字
@@ -72,8 +73,7 @@ func workerQueue(request Request) (ParseResult, error) {
 	if err != nil {
 		//处理错误err
 		log.Printf("fetcher请求失败,url：%s ；error：%v", request.Url, err)
-		//停止后续操作，进入下一次循环
-		//continue
+
 		return ParseResult{}, err
 	}
 	//解析fetcher请求url返回的数据
