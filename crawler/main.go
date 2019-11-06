@@ -2,37 +2,34 @@ package main
 
 import (
 	"fmt"
+	"shSpider_plus"
+	"shSpider_plus/dataBase"
 	"shSpider_plus/elastic"
-	"shSpider_plus/engine"
-	"shSpider_plus/persist"
-	"shSpider_plus/scheduler"
-	"shSpider_plus/zhenai/parser"
 )
 
 func main() {
+
+	//连接数据库 为变量DB赋值
+	dataBase.Connect()
+
 	//创建es客户端
-	url := "http://47.75.138.227:9200"
+	url := "http://47.75.163.92:9200"
 	client, e := elastic.NewClient(url)
 
 	if e != nil {
 		fmt.Println("es客户端创建失败", e)
-		panic(e)
+		//panic(e)
 	}
 
-	//存储路径
-	index := "zhenaidata"
-	esType := "zhenai"
+	//存储路径 解析时传入 每个不同的解析器有不同的存储路径
+	//index := "zhenaidata"
+	//index := "vcbdata"
+	//esType := "zhenai"
+	//esType := "vcb"
 
-	//完成fetcher、parser、scheduler、engine es存储
-	engineMain := engine.ConcurrentQueue{
-		Scheduler:   &scheduler.QueueScheduler{},
-		WorkerCount: 50,
-		SaverChan:   persist.Saver(client,index ,esType),
-	}
+	//启动珍爱网的爬虫
+	//shSpider_plus.StartZhenAi(client)
 
-	engineMain.Run(engine.Request{
-		Url:        "http://www.zhenai.com/zhenghun",
-		ParserFunc: parser.ParseCityList,
-	})
-
+	//启动vcb的爬虫
+	shSpider_plus.StartVcb(client)
 }

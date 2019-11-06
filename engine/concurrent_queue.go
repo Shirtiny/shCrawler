@@ -50,17 +50,22 @@ func (engine *ConcurrentQueue) Run(seeds ...Request) {
 	for {
 		//接收输出结果
 		result := <-out
+
 		//打印解析结果中的objects result.Objects
 		for _, object := range result.Objects {
-			//log.Printf("worker输出的对象为： %v\n",object)
 			//传入存储通道
-			go func() { engine.SaverChan <- object }()
+			go func(esObject model.EsModel) {
+				log.Printf("存储管道输入： %v\n",esObject)
+				engine.SaverChan <- esObject
+			}(object)
 		}
+
 		//处理解析出的新请求 result.Requests
 		for _, request := range result.Requests {
 			//将新请求提交给调度器处理 => worker输出中取request输入到scheduler
 			engine.Scheduler.SubmitQueue(request)
 		}
+
 	}
 
 }

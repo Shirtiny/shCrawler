@@ -14,7 +14,7 @@ import (
 )
 
 //访问间隔
-var rateLimiter = time.Tick(60 * time.Millisecond)
+var rateLimiter = time.Tick(900 * time.Millisecond)
 
 func Fetcher(url string) ([]byte, error) {
 	//限制执行速率

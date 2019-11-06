@@ -26,19 +26,23 @@ func NewClient(url string) (*elasticsearch.Client,error) {
 	return elasticsearch.NewClient(cfg)
 }
 
-//Add 增加和修改数据
-func Add(es *elasticsearch.Client,index string,esType string,object model.EsModel) *esapi.Response {
+//Add 增加和修改数据 使用传入EsModel对象的index和type
+func Add(es *elasticsearch.Client,object model.EsModel) *esapi.Response {
 	//对象转json
 	bytes2, _ := json.Marshal(object)
 	jsonString=string(bytes2)
 
 	//增 改 index/type/id body
 	request := esapi.IndexRequest{
-		Index:        index,
-		DocumentType: esType,
-		DocumentID:   object.ID,
+		Index:        object.Index,
+		DocumentType: object.Type,
 		Body:         strings.NewReader(jsonString),
 		Refresh:      "true",
+	}
+
+	//id不为空串时，才使用传入的id
+	if object.ID!=""{
+		request.DocumentID=object.ID
 	}
 
 	//插入

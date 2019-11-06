@@ -1,6 +1,9 @@
 package engine
 
-import "shSpider_plus/model"
+import (
+	"fmt"
+	"shSpider_plus/model"
+)
 
 //Request，存储url、解析器方法
 type Request struct {
@@ -17,5 +20,6 @@ type ParseResult struct {
 
 //空的解析器函数，临时给没有解析器的url使用
 func NilParser([]byte) ParseResult {
+	fmt.Println("空的解析器")
 	return ParseResult{}
 }
