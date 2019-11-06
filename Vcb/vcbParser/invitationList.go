@@ -75,7 +75,6 @@ func extract(reg *regexp.Regexp, bytes []byte, regName string) (matchs [][][]byt
 		matchs = append(matchs, match)
 		fmt.Println()
 	}
-
 	fmt.Println("匹配到#", len(allSubmatch), "个"+regName)
 
 	return matchs
