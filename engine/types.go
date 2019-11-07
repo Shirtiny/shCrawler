@@ -8,8 +8,11 @@ import (
 //Request，存储url、解析器方法
 type Request struct {
 	Url        string
-	ParserFunc func([]byte) ParseResult
+	ParserFunc ParserFunc
 }
+
+//解析器方法
+type ParserFunc  func([]byte) ParseResult
 
 //解析器方法的返回值结构体，存储request数组、object数组
 type ParseResult struct {

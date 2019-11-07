@@ -16,6 +16,6 @@ func TestParseInvitationList(t *testing.T) {
 
 	//fmt.Printf("%s",bytes)
 
-	ParseInvitationList(bytes)
+	ParseInvitationList(bytes,11)
 
 }

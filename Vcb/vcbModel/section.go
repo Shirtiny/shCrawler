@@ -3,7 +3,7 @@ package vcbModel
 
 type Section struct {
 	//在Vcb的板块id 唯一
-	VcbSectionId string `gorm:"not null;unique"`
+	VcbSectionId int `gorm:"not null;unique"`
 	//版块标题
 	Title string
 	//描述
