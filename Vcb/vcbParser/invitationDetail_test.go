@@ -14,5 +14,5 @@ func TestParseInvitationDetail(t *testing.T) {
 		panic(e)
 	}
 
-	ParseInvitationDetail(bytes)
+	ParseInvitationDetail(bytes,32,1515)
 }

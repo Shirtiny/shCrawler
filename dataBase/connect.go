@@ -60,5 +60,6 @@ func Database(connString string) {
 func migration() {
 	DB.AutoMigrate(&vcbModel.Section{})
 	DB.AutoMigrate(&vcbModel.SectionInvitation{})
+	DB.AutoMigrate(&vcbModel.Invitation{})
 	DB.AutoMigrate(&model.Profile{})
 }

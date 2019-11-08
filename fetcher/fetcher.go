@@ -22,10 +22,19 @@ func Fetcher(url string) ([]byte, error) {
 	//发起请求
 	//resp, err := http.Get(url)
 
-	request, _ := http.NewRequest(http.MethodGet, url, nil)
-	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0")
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	for err!=nil {
+		request, err = http.NewRequest(http.MethodGet, url, nil)
+		if err==nil {
+			request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0")
+			break
+		}
+	}
 
-	client := http.Client{}
+
+
+
+	client := &http.Client{}
 
 	response, err := client.Do(request)
 

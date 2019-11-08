@@ -32,17 +32,18 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 	parseResult := engine.ParseResult{}
 
 	//遍历帖子匹配结果 把每个URL放入新的request中
-	limit :=0
+	limit := 0
 	for _, invitation := range invitations {
-
-		//加入requests
-		parseResult.Requests = append(parseResult.Requests, engine.Request{
-			Url:        "http://bbs.vcb-s.com/" + string(invitation[0]),
-			ParserFunc: ParseInvitationDetail,
-		})
 
 		//提取id 输入thread-5031-1-2.html  返回5031
 		InvitationId := extractInvitationId(invitation[0])
+
+		//加入requests
+		parseResult.Requests = append(parseResult.Requests, engine.Request{
+			Url: "http://bbs.vcb-s.com/" + string(invitation[0]),
+			//向下一个解析器传入sectionId和invitationId
+			ParserFunc: InvitationDetailParser(sectionId, InvitationId),
+		})
 
 		//版块id与帖子id 关联模型
 		sectionInvitation := vcbModel.SectionInvitation{
@@ -62,7 +63,7 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 	//遍历页码组 找出下一页的地址
 	for _, pageNum := range pageNums {
 		//限制爬取的力度
-		if limit==1 {
+		if limit == 1 {
 			break
 		}
 		limit++
@@ -128,4 +129,12 @@ func extractInvitationId(invitationNameBytes []byte) int {
 		return 0
 	}
 
+}
+
+//封装 向下一个解析器传递帖子id
+func InvitationDetailParser(sectionId int, invitationId int) engine.ParserFunc {
+
+	return func(bytes []byte) engine.ParseResult {
+		return ParseInvitationDetail(bytes, sectionId, invitationId)
+	}
 }
