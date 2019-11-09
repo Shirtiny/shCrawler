@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"shSpider_plus/Vcb/vcbModel"
 	"shSpider_plus/engine"
-	"shSpider_plus/model"
 	"strconv"
 )
 
@@ -44,20 +42,6 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 			//向下一个解析器传入sectionId和invitationId
 			ParserFunc: InvitationDetailParser(sectionId, InvitationId),
 		})
-
-		//版块id与帖子id 关联模型
-		sectionInvitation := vcbModel.SectionInvitation{
-			//sectionId由上一个解析器传入
-			VcbSectionId: sectionId,
-			InvitationId: InvitationId,
-		}
-
-		parseResult.Objects = append(parseResult.Objects, model.EsModel{
-			Index:  "section_invitation",
-			Type:   "sandi",
-			ID:     "",
-			Object: sectionInvitation,
-		})
 	}
 
 	//遍历页码组 找出下一页的地址
@@ -67,6 +51,7 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 			break
 		}
 		limit++
+
 		//1是当前页 2是总页数
 		//字符串转int
 		curPage, err := strconv.Atoi(string(pageNum[0]))

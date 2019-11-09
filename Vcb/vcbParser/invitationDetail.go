@@ -7,10 +7,14 @@ import (
 	"shSpider_plus/engine"
 	"shSpider_plus/model"
 	"strconv"
+	"time"
 )
 
 //提取帖子标题 包括标签和title
 var invitationTitleReg = regexp.MustCompile(`<a[^>]*>([^<]+)</a>\s*<span\s*id="thread_subject"\s*[^>]*>([^<]+)</span>`)
+
+//提取帖子标题 只匹配title 因为有些帖子没有标签（主题）
+var invitationTitleOnlyReg = regexp.MustCompile(`<span\s*id="thread_subject"\s*[^>]*>([^<]+)</span>`)
 
 //查看数和回复数
 var viewsAndReplyNumReg = regexp.MustCompile(`<span class="xg1">查看:</span> <span class="xi1">(\d+)</span><span\s*class="pipe">.*</span><span\s*class="xg1">回复:</span>\s*<span\s*class="xi1">(?P<replyNum>\d+)</span>`)
@@ -52,6 +56,11 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 	createdTimeStr := extarctOneString(createdTimeReg, bytes)
 	//fmt.Printf("创建时间：%s \n", createdTimeStr)
 
+	//创建时间时间戳 毫秒数
+	gmtCreated := time.Now().UnixNano() / 1e6
+	//修改时间时间戳
+	gmtModified := gmtCreated
+
 	//回复数 查看数
 	views, replyNum := extractViewsAndReplyNum(bytes)
 	//fmt.Printf("查看%v ，回复%v ；\n", views, replyNum)
@@ -78,6 +87,8 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 		Views:        views,
 		ReplyNum:     replyNum,
 		CreatedTime:  createdTimeStr,
+		GmtCreated:   gmtCreated,
+		GmtModified:  gmtModified,
 		AuthorId:     authorId,
 	}
 	esModel.Object = invitation
@@ -88,6 +99,7 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 		Url:        userUrl,
 		ParserFunc: engine.NilParser,
 	})
+
 
 	return result
 }
@@ -119,7 +131,12 @@ func extractInvitationTitle(bytes []byte) (string, string) {
 	submatch := invitationTitleReg.FindSubmatch(bytes)
 	//fmt.Printf("categorise : %s title：%s", submatch[1], submatch[2])
 	if len(submatch) == 0 {
-		return "", ""
+		//如果主题+标题的模式没有匹配到，就尝试只匹配标题
+		titleSubmatch := invitationTitleOnlyReg.FindSubmatch(bytes)
+		if len(titleSubmatch) == 0 {
+			return "", ""
+		}
+		return "", string(titleSubmatch[1])
 	}
 	return string(submatch[1]), string(submatch[2])
 }

@@ -42,6 +42,7 @@ func ParseSectionList(bytes []byte) engine.ParseResult {
 			break
 		}
 		limit++
+
 		//submatchs[1]是imageUrl，submatchs[2]是url，submatchs[3]是版块标题，submatchs[4]是版块描述
 		fmt.Printf("%s %s %s %s", submatchs[1], submatchs[2], submatchs[3], submatchs[4])
 		//存入模型
