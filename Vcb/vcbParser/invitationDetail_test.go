@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseInvitationDetail(t *testing.T) {
-	bytes, e := fetcher.Fetcher("http://bbs.vcb-s.com/thread-1515-1-1.html")
+	bytes, e := fetcher.Fetcher("http://bbs.vcb-s.com/thread-4915-1-3.html")
 
 	if e!=nil {
 		fmt.Print(e)

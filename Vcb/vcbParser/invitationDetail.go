@@ -1,6 +1,7 @@
 package vcbParser
 
 import (
+	"fmt"
 	"log"
 	"regexp"
 	"shSpider_plus/Vcb/vcbModel"
@@ -28,11 +29,22 @@ var authorIdReg = regexp.MustCompile(`<a\s*.*href="[^"]+authorid=(\d+)"\s*[^>]*>
 //用于提取帖子内容
 var invitationContentReg = regexp.MustCompile(`<td\s*class="t_f"\s*id="postmessage_\d+">[\s\S]*?</td>`)
 
+//用于提取帖子内容后续部分 因为有的帖子有 有的帖子没有 <div id="comment_30212" class="cm">
+var invitationPattlReg = regexp.MustCompile(`(<div class="pattl">[\s\S]*?</div>)\s*<div\s*id="comment_\d+"\s*`)
+
 //帖子内容 用于将连接替换为http://bbs.vcb-s.com/开头
 var contentLinkReg = regexp.MustCompile(`<(a|img)+?([^>]+)(src|href)+?="(?P<url>([^hjm]+?[^"]+))"`)
 
 //帖子内容 用于显示图片文件资源
 var imageFileReg = regexp.MustCompile(`<img+?([^>]+)src+?="([^"]+)"\s*zoomfile="(?P<imageFileUrl>([^"]+))"`)
+
+//帖子内容 匹配下载文件的连接 来替换
+var dFileUrlReg = regexp.MustCompile(`<a+?\s*href+?="(.*forum\.php\?.*aid=([^&"]+)[^"]*)"[\s\S]*?target="_blank">([^<]+)</a>`)
+
+//帖子内容 用于提取文件连接中的aid
+var fileAidReg = regexp.MustCompile(`forum\.php\?.*aid=([^&"]+)&noupdate=yes&nothumb=yes`)
+
+
 
 //ParseInvitationDetail 解析器，解析帖子
 func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine.ParseResult {
@@ -100,7 +112,6 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 		ParserFunc: engine.NilParser,
 	})
 
-
 	return result
 }
 
@@ -115,13 +126,41 @@ func extarctInvitationContent(bytes []byte) string {
 	if len(content) == 0 {
 		return ""
 	}
+
+	pattlSub := invitationPattlReg.FindSubmatch(bytes)
+	if len(pattlSub)!=0 {
+		content = append(content,'\n')
+		content = append(content,pattlSub[1]...)
+	}
+	//fmt.Printf("合并后的帖子内容： %s\n",content)
+
 	//替换为 ${n}表示引用匹配的下标为n的子串的内容
 	link := "<${1}${2}${3}=\"http://bbs.vcb-s.com/${url}\""
 	content = contentLinkReg.ReplaceAll(content, []byte(link))
-	//替换图片文件资源
-	imageFileUrlStr := "<img${1}src=\"http://bbs.vcb-s.com/${imageFileUrl}\""
+
+	//匹配文件url中的aid
+	var aid string
+	aid = ""
+	imageUrlSubmatch := imageFileReg.FindAllSubmatch(content, -1)
+	for _, urlSub := range imageUrlSubmatch {
+		imageUrl := urlSub[3]
+		aidMatchs := fileAidReg.FindSubmatch(imageUrl)
+		aid = string(aidMatchs[1])
+	}
+
+	//替换图片文件资源 使用自站的shApi来代理处理图片资源 解决无法直接预览图片的问题
+	imageFileUrlStr := "<img${1}src=\"/shApi/vcb/imageHelper?aid=" + aid + "\""
 	content = imageFileReg.ReplaceAll(content, []byte(imageFileUrlStr))
-	//fmt.Printf("替换后： %s", content)
+
+	//替换文件下载连接
+	dFileSub := dFileUrlReg.FindSubmatch(content)
+	//fmt.Printf("%s\n %s\n %s\n %s\n", dFileSub[0], dFileSub[1], dFileSub[2], dFileSub[3])
+	if len(dFileSub) != 0 {
+		dFileUrlStr := "<a href=\"/shApi/vcb/dFileHelper?aid=${2}\" target=\"_blank\">${3}</a>"
+		content = dFileUrlReg.ReplaceAll(content, []byte(dFileUrlStr))
+	}
+
+	fmt.Printf("最终文件内容： %s", content)
 
 	return string(content)
 }
