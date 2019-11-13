@@ -28,7 +28,7 @@ func StartZhenAi(client *elasticsearch.Client)  {
 func StartVcb(client *elasticsearch.Client)  {
 	engineMain := engine.ConcurrentQueue{
 		Scheduler:   &scheduler.QueueScheduler{},
-		WorkerCount: 3,
+		WorkerCount: 6,
 		SaverChan:   persist.Saver(client),
 	}
 

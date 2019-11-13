@@ -30,7 +30,7 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 	parseResult := engine.ParseResult{}
 
 	//遍历帖子匹配结果 把每个URL放入新的request中
-	limit := 0
+	//limit := 0
 	for _, invitation := range invitations {
 
 		//提取id 输入thread-5031-1-2.html  返回5031
@@ -47,10 +47,10 @@ func ParseInvitationList(bytes []byte, sectionId int) engine.ParseResult {
 	//遍历页码组 找出下一页的地址
 	for _, pageNum := range pageNums {
 		//限制爬取的力度
-		if limit == 1 {
-			break
-		}
-		limit++
+		//if limit == 1 {
+		//	break
+		//}
+		//limit++
 
 		//1是当前页 2是总页数
 		//字符串转int

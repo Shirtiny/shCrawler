@@ -35,13 +35,13 @@ func ParseSectionList(bytes []byte) engine.ParseResult {
 	//存储总解析结果
 	result := engine.ParseResult{}
 
-	limit :=0
+	//limit :=0
 	for _, submatchs := range allSubmatch {
 		//限制爬取的力度
-		if limit==1 {
-			break
-		}
-		limit++
+		//if limit==1 {
+		//	break
+		//}
+		//limit++
 
 		//submatchs[1]是imageUrl，submatchs[2]是url，submatchs[3]是版块标题，submatchs[4]是版块描述
 		fmt.Printf("%s %s %s %s", submatchs[1], submatchs[2], submatchs[3], submatchs[4])

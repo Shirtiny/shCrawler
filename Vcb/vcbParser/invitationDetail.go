@@ -21,7 +21,7 @@ var invitationTitleOnlyReg = regexp.MustCompile(`<span\s*id="thread_subject"\s*[
 var viewsAndReplyNumReg = regexp.MustCompile(`<span class="xg1">查看:</span> <span class="xi1">(\d+)</span><span\s*class="pipe">.*</span><span\s*class="xg1">回复:</span>\s*<span\s*class="xi1">(?P<replyNum>\d+)</span>`)
 
 //帖子创建时间 字符串
-var createdTimeReg = regexp.MustCompile(`<em[^>]*>发表于\s*(\d+-\d+-\d+ \d+:\d+:\d+)\s*</em>`)
+var invitationCreatedTimeReg = regexp.MustCompile(`<em[^>]*>发表于\s*(\d+-\d+-\d+ \d+:\d+:\d+)\s*</em>`)
 
 //作者id 从·只看该作者·的url中提取
 var authorIdReg = regexp.MustCompile(`<a\s*.*href="[^"]+authorid=(\d+)"\s*[^>]*>\s*只看该作者\s*</a>`)
@@ -44,8 +44,6 @@ var dFileUrlReg = regexp.MustCompile(`<a+?\s*href+?="(.*forum\.php\?.*aid=([^&"]
 //帖子内容 用于提取文件连接中的aid
 var fileAidReg = regexp.MustCompile(`forum\.php\?.*aid=([^&"]+)&noupdate=yes&nothumb=yes`)
 
-
-
 //ParseInvitationDetail 解析器，解析帖子
 func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine.ParseResult {
 
@@ -65,7 +63,7 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 	userUrl := "http://bbs.vcb-s.com/space-uid-" + authorIdStr + ".html"
 
 	//创建时间
-	createdTimeStr := extarctOneString(createdTimeReg, bytes)
+	createdTimeStr := extractOneString(invitationCreatedTimeReg, bytes)
 	//fmt.Printf("创建时间：%s \n", createdTimeStr)
 
 	//创建时间时间戳 毫秒数
@@ -109,7 +107,7 @@ func ParseInvitationDetail(bytes []byte, sectionId int, invitationId int) engine
 	//请求
 	result.Requests = append(result.Requests, engine.Request{
 		Url:        userUrl,
-		ParserFunc: engine.NilParser,
+		ParserFunc: UserProfileParser(authorId),
 	})
 
 	return result
@@ -128,9 +126,9 @@ func extarctInvitationContent(bytes []byte) string {
 	}
 
 	pattlSub := invitationPattlReg.FindSubmatch(bytes)
-	if len(pattlSub)!=0 {
-		content = append(content,'\n')
-		content = append(content,pattlSub[1]...)
+	if len(pattlSub) != 0 {
+		content = append(content, '\n')
+		content = append(content, pattlSub[1]...)
 	}
 	//fmt.Printf("合并后的帖子内容： %s\n",content)
 
@@ -200,7 +198,7 @@ func extractViewsAndReplyNum(bytes []byte) (int, int) {
 }
 
 //通用提取，只有一个子串（小括号） 返回字符串
-func extarctOneString(reg *regexp.Regexp, text []byte) string {
+func extractOneString(reg *regexp.Regexp, text []byte) string {
 	submatch := reg.FindSubmatch(text)
 	if len(submatch) == 0 {
 		return ""
@@ -221,4 +219,11 @@ func extractOneInt(reg *regexp.Regexp, text []byte) int {
 	}
 
 	return i
+}
+
+//封装 为下一个用户解析器 传输用户id
+func UserProfileParser(userId int) engine.ParserFunc {
+	return func(bytes []byte) engine.ParseResult {
+		return ParseUserProfile(bytes, userId)
+	}
 }
